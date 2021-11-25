@@ -9,23 +9,20 @@ import android.view.View;
  * same frame. A click on one button disables all buttons for that frame.
  */
 public abstract class DebouncingOnClickListener implements View.OnClickListener {
-  private static final Runnable ENABLE_AGAIN = () -> enabled = true;
-  private static final Handler MAIN = new Handler(Looper.getMainLooper());
+  static long clickTime = 0L;
 
-  static boolean enabled = true;
+  public DebouncingOnClickListener() {
+  }
 
-  @Override public final void onClick(View v) {
-    if (enabled) {
-      enabled = false;
-
-      // Post to the main looper directly rather than going through the view.
-      // Ensure that ENABLE_AGAIN will be executed, avoid static field {@link #enabled}
-      // staying in false state.
-      MAIN.post(ENABLE_AGAIN);
-
-      doClick(v);
+  public final void onClick(View v) {
+    long time = System.currentTimeMillis();
+    if (time - clickTime < 500L) {
+      clickTime = time;
+    } else {
+      clickTime = time;
+      this.doClick(v);
     }
   }
 
-  public abstract void doClick(View v);
+  public abstract void doClick(View view);
 }
